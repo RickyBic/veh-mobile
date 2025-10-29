@@ -1,0 +1,61 @@
+import React from 'react';
+import { View, Text, Image, StyleSheet } from 'react-native';
+import { theme } from '../utils/theme';
+
+interface SceneCardProps {
+  title: string;
+  text: string;
+  imageUrl?: string;
+}
+
+export function SceneCard({ title, text, imageUrl }: SceneCardProps) {
+  return (
+    <View style={styles.container}>
+      {imageUrl && (
+        <Image
+          source={{ uri: imageUrl }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+      )}
+      <View style={styles.content}>
+        <Text style={styles.title}>{title}</Text>
+        <Text style={styles.text}>{text}</Text>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    overflow: 'hidden',
+    ...theme.shadows.mystical,
+  },
+  image: {
+    width: '100%',
+    height: 200,
+  },
+  content: {
+    padding: theme.spacing.lg,
+  },
+  title: {
+    fontSize: 24,
+    fontFamily: theme.fonts.bold,
+    color: theme.colors.primary,
+    marginBottom: theme.spacing.md,
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+  },
+  text: {
+    fontSize: 16,
+    fontFamily: theme.fonts.regular,
+    color: theme.colors.text,
+    lineHeight: 24,
+    textAlign: 'justify',
+  },
+});
