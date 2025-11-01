@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
+import { getFullAssetUrl } from '../utils/asset-url';
 import { theme } from '../utils/theme';
 
 interface SceneCardProps {
@@ -9,15 +10,17 @@ interface SceneCardProps {
 }
 
 export function SceneCard({ title, text, imageUrl }: SceneCardProps) {
+  const fullImageUrl = imageUrl ? getFullAssetUrl(imageUrl) : null;
+
   return (
     <View style={styles.container}>
-      {imageUrl && (
+      {fullImageUrl ? (
         <Image
-          source={{ uri: imageUrl }}
+          source={{ uri: fullImageUrl }}
           style={styles.image}
           resizeMode="cover"
         />
-      )}
+      ) : null}
       <View style={styles.content}>
         <Text style={styles.title}>{title}</Text>
         <Text style={styles.text}>{text}</Text>
