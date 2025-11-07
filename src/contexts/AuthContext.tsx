@@ -130,14 +130,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         variables: { input },
       });
 
-      if (data?.createUser?.success && data?.createUser?.user) {
-        // Après l'inscription réussie, connecter automatiquement l'utilisateur
-        await login(input.email, input.password);
+      if (data?.createUser?.success) {
+        // L'inscription est réussie, mais on ne connecte pas automatiquement l'utilisateur
+        // Il devra se connecter manuellement via la page de login
+        return; // Retourner sans erreur pour indiquer le succès
       } else {
-        throw new Error(data?.createUser?.message || "Échec de l'inscription");
+        const errorMessage =
+          data?.createUser?.message || "Échec de l'inscription";
+        throw new Error(errorMessage);
       }
     } catch (err: any) {
-      setError(err.message || "Erreur lors de l'inscription");
+      const errorMessage = err.message || "Erreur lors de l'inscription";
+      setError(errorMessage);
       throw err;
     } finally {
       setIsLoading(false);

@@ -67,8 +67,8 @@ export interface Scene {
   isStartScene: boolean;
   isEndScene: boolean;
   imageId?: Asset;
-  soundId?: Asset;  // TTS (narration)
-  musicId?: Asset;  // Musique d'ambiance
+  soundId?: Asset; // TTS (narration)
+  musicId?: Asset; // Musique d'ambiance
   choices?: Choice[];
 }
 

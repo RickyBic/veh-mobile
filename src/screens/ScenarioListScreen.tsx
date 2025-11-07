@@ -21,12 +21,16 @@ export function ScenarioListScreen() {
     GET_ALL_SCENARIOS,
     {
       variables: { publishedOnly: true },
-    }
+    },
   );
 
   if (loading) {
     return (
-      <ImageBackground source={backgroundImage} resizeMode="cover" style={styles.background}>
+      <ImageBackground
+        source={backgroundImage}
+        resizeMode="cover"
+        style={styles.background}
+      >
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
           <Text style={styles.loadingText}>Chargement des scénarios...</Text>
@@ -37,11 +41,16 @@ export function ScenarioListScreen() {
 
   if (error) {
     return (
-      <ImageBackground source={backgroundImage} resizeMode="cover" style={styles.background}>
+      <ImageBackground
+        source={backgroundImage}
+        resizeMode="cover"
+        style={styles.background}
+      >
         <View style={styles.centerContainer}>
           <Text style={styles.errorText}>Erreur : {error.message}</Text>
           <Text style={styles.errorHint}>
-            Vérifiez que le backend est démarré sur {process.env.EXPO_PUBLIC_API_URL}
+            Vérifiez que le backend est démarré sur{' '}
+            {process.env.EXPO_PUBLIC_API_URL}
           </Text>
         </View>
       </ImageBackground>
@@ -51,7 +60,11 @@ export function ScenarioListScreen() {
   const scenarios: Scenario[] = data?.allScenarios || [];
 
   return (
-    <ImageBackground source={backgroundImage} resizeMode="cover" style={styles.background}>
+    <ImageBackground
+      source={backgroundImage}
+      resizeMode="cover"
+      style={styles.background}
+    >
       <ScrollView style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.title}>SCÉNARIOS DISPONIBLES</Text>
@@ -77,7 +90,9 @@ export function ScenarioListScreen() {
                 activeOpacity={0.8}
               >
                 <Text style={styles.cardTitle}>{scenario.title}</Text>
-                <Text style={styles.cardDescription}>{scenario.description}</Text>
+                <Text style={styles.cardDescription}>
+                  {scenario.description}
+                </Text>
                 <Text style={styles.cardAction}>Commencer l'aventure →</Text>
               </TouchableOpacity>
             ))
@@ -107,17 +122,20 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.md,
     color: theme.colors.text,
     fontSize: 16,
+    fontFamily: theme.fonts.regular,
   },
   errorText: {
     fontSize: 18,
     color: '#ff6b6b',
     textAlign: 'center',
     marginBottom: theme.spacing.md,
+    fontFamily: theme.fonts.bold,
   },
   errorHint: {
     fontSize: 14,
     color: theme.colors.textSecondary,
     textAlign: 'center',
+    fontFamily: theme.fonts.regular,
   },
   header: {
     padding: theme.spacing.lg,
@@ -127,15 +145,17 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontFamily: theme.fonts.bold,
     color: theme.colors.primary,
     letterSpacing: 3,
     marginBottom: theme.spacing.xs,
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 14,
     color: theme.colors.textSecondary,
     fontStyle: 'italic',
+    fontFamily: theme.fonts.regular,
   },
   content: {
     padding: theme.spacing.lg,
@@ -179,10 +199,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: theme.colors.text,
     marginBottom: theme.spacing.sm,
+    fontFamily: theme.fonts.regular,
   },
   emptySubtext: {
     fontSize: 14,
     color: theme.colors.textSecondary,
     textAlign: 'center',
+    fontFamily: theme.fonts.regular,
   },
 });
