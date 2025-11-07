@@ -1,7 +1,7 @@
 import { useAuth } from '@/src/contexts/AuthContext';
 import { theme } from '@/src/utils/theme';
 import { Tabs, useRouter } from 'expo-router';
-import { List, LogOut } from 'lucide-react-native';
+import { ScrollText, LogOut } from 'lucide-react-native';
 import { useEffect } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
@@ -38,13 +38,17 @@ export default function TabLayout() {
           backgroundColor: theme.colors.surface,
           borderTopColor: theme.colors.border,
           borderTopWidth: 1,
+          paddingBottom: 6,
+          height: 64,
         },
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textSecondary,
         tabBarLabelStyle: {
           fontSize: 12,
           fontWeight: 'bold',
+          fontFamily: theme.fonts.bold,
           letterSpacing: 1,
+          marginBottom: 2,
         },
       }}
     >
@@ -52,7 +56,9 @@ export default function TabLayout() {
         name="scenarios"
         options={{
           title: 'Scénarios',
-          tabBarIcon: ({ size, color }) => <List size={size} color={color} />,
+          tabBarIcon: ({ size, color }) => (
+            <ScrollText size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen

@@ -35,6 +35,8 @@ export const theme = {
   fonts: {
     regular: 'Cinzel-Regular',
     bold: 'Cinzel-Bold',
+    bodyRegular: 'Lora-Regular',
+    bodyBold: 'Lora-Bold',
   },
 };
 

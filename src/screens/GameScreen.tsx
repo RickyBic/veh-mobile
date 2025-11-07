@@ -59,7 +59,7 @@ export function GameScreen() {
     {
       variables: { sceneId: currentSceneId },
       skip: !currentSceneId,
-    }
+    },
   );
 
   // Mutations pour la gestion de progression
@@ -296,10 +296,9 @@ export function GameScreen() {
           <Text style={styles.scenarioDescription}>
             {scenarioData.scenarioById.description}
           </Text>
-          <MysticalButton
-            title="Débuter"
-            onPress={handleStartNewGame}
-            style={styles.startButton}
+          <LoadingSpinner
+            message="Veuillez patienter, préparation de votre aventure..."
+            transparent={true}
           />
         </View>
       </ImageBackground>
@@ -310,6 +309,15 @@ export function GameScreen() {
   const sortedChoices = currentScene.choices
     ? [...currentScene.choices].sort((a, b) => a.order - b.order)
     : [];
+
+  // Déterminer si c'est une scène de fin
+  // Une scène est de fin si :
+  // 1. isEndScene est true, OU
+  // 2. La scène n'a pas de choix (scène terminale de l'arbre)
+  const isEndScene =
+    currentScene.isEndScene ||
+    !currentScene.choices ||
+    currentScene.choices.length === 0;
 
   return (
     <ImageBackground
@@ -345,9 +353,12 @@ export function GameScreen() {
           />
         )}
 
-        {currentScene.isEndScene ? (
+        {isEndScene ? (
           <View style={styles.endContainer}>
             <Text style={styles.endText}>FIN DE L'AVENTURE</Text>
+            <Text style={styles.endSubtext}>
+              L'histoire est terminée. Merci d'avoir joué !
+            </Text>
             <MysticalButton
               title="Recommencer"
               onPress={handleStartNewGame}
@@ -419,7 +430,7 @@ const styles = StyleSheet.create({
   },
   choicesTitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: theme.fonts.bold,
     color: theme.colors.primary,
     textAlign: 'center',
     marginBottom: theme.spacing.lg,
@@ -439,7 +450,15 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
     textAlign: 'center',
     letterSpacing: 2,
+    marginBottom: theme.spacing.md,
+  },
+  endSubtext: {
+    fontSize: 16,
+    fontFamily: theme.fonts.regular,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
     marginBottom: theme.spacing.xl,
+    lineHeight: 22,
   },
   errorContainer: {
     flex: 1,
@@ -452,10 +471,12 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
     textAlign: 'center',
     marginBottom: theme.spacing.md,
+    fontFamily: theme.fonts.bold,
   },
   errorDetail: {
     fontSize: 14,
     color: theme.colors.textSecondary,
     textAlign: 'center',
+    fontFamily: theme.fonts.regular,
   },
 });

@@ -17,8 +17,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { theme } from '../utils/theme';
 
 export function LoginScreen() {
-  const [email, setEmail] = useState('admin@example.com');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const { login, isLoading, error, user } = useAuth();
   const router = useRouter();
 
@@ -36,7 +36,7 @@ export function LoginScreen() {
     } catch (err: any) {
       Alert.alert(
         'Erreur de connexion',
-        err.message || 'Identifiants invalides'
+        err.message || 'Identifiants invalides',
       );
     }
   };
@@ -62,7 +62,7 @@ export function LoginScreen() {
               value={email}
               onChangeText={setEmail}
               placeholder="email@example.com"
-              placeholderTextColor={theme.colors.textSecondary}
+              placeholderTextColor="#7a5a3a"
               autoCapitalize="none"
               keyboardType="email-address"
               editable={!isLoading}
@@ -74,7 +74,7 @@ export function LoginScreen() {
               value={password}
               onChangeText={setPassword}
               placeholder="••••••••"
-              placeholderTextColor={theme.colors.textSecondary}
+              placeholderTextColor="#7a5a3a"
               secureTextEntry
               autoCapitalize="none"
               editable={!isLoading}
@@ -98,12 +98,6 @@ export function LoginScreen() {
                 Pas encore de compte ? Inscrivez-vous
               </Text>
             </TouchableOpacity>
-
-            <Text style={styles.hint}>
-              Utilisateurs de test :{'\n'}
-              admin@example.com / admin123{'\n'}
-              player1@example.com / player123
-            </Text>
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -158,10 +152,7 @@ const styles = StyleSheet.create({
     padding: theme.spacing.md,
     color: theme.colors.text,
     fontSize: 16,
-    fontFamily: Platform.select({
-      ios: 'System',
-      android: 'sans-serif',
-    }) as any,
+    fontFamily: theme.fonts.bodyRegular,
   },
   error: {
     color: '#ff6b6b',

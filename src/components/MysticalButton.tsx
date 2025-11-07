@@ -15,7 +15,7 @@ export function MysticalButton({
   onPress,
   variant = 'primary',
   disabled = false,
-  style
+  style,
 }: MysticalButtonProps) {
   return (
     <TouchableOpacity
@@ -29,7 +29,9 @@ export function MysticalButton({
       disabled={disabled}
       activeOpacity={0.8}
     >
-      <Text style={[styles.text, variant === 'secondary' && styles.secondaryText]}>
+      <Text
+        style={[styles.text, variant === 'secondary' && styles.secondaryText]}
+      >
         {title}
       </Text>
     </TouchableOpacity>

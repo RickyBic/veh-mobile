@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, TouchableOpacity, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import {
+  View,
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+} from 'react-native';
 import { Audio } from 'expo-av';
 import { getFullAssetUrl } from '../utils/asset-url';
 import { theme } from '../utils/theme';
@@ -14,7 +20,11 @@ interface SceneAudioProps {
  * Composant pour lire les sons associés aux scènes
  * Utilise expo-av pour la lecture audio
  */
-export function SceneAudio({ soundUrl, autoPlay = false, showControls = true }: SceneAudioProps) {
+export function SceneAudio({
+  soundUrl,
+  autoPlay = false,
+  showControls = true,
+}: SceneAudioProps) {
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -29,18 +39,20 @@ export function SceneAudio({ soundUrl, autoPlay = false, showControls = true }: 
       try {
         setIsLoading(true);
         setError(null);
-        
+
         const fullUrl = getFullAssetUrl(soundUrl);
-        
+
         if (!fullUrl) {
           setError('URL du son invalide');
           setIsLoading(false);
           return;
         }
-        
+
         // Vérifier que l'URL est bien formée
         if (!fullUrl.startsWith('http://') && !fullUrl.startsWith('https://')) {
-          setError(`URL invalide (doit commencer par http:// ou https://): ${fullUrl}`);
+          setError(
+            `URL invalide (doit commencer par http:// ou https://): ${fullUrl}`,
+          );
           setIsLoading(false);
           return;
         }
@@ -57,10 +69,10 @@ export function SceneAudio({ soundUrl, autoPlay = false, showControls = true }: 
         // Charger le son
         const { sound: loadedSound } = await Audio.Sound.createAsync(
           { uri: fullUrl },
-          { 
+          {
             shouldPlay: autoPlay,
             volume: 1.0,
-          }
+          },
         );
 
         setSound(loadedSound);
@@ -85,14 +97,19 @@ export function SceneAudio({ soundUrl, autoPlay = false, showControls = true }: 
       } catch (error: any) {
         // Messages d'erreur explicites
         let errorMessage = 'Impossible de charger le son';
-        if (error.message?.includes('Format error') || error.code === 'MEDIA_ELEMENT_ERROR') {
-          errorMessage = 'Format audio non supporté. Le fichier peut être corrompu ou dans un format incompatible.';
+        if (
+          error.message?.includes('Format error') ||
+          error.code === 'MEDIA_ELEMENT_ERROR'
+        ) {
+          errorMessage =
+            'Format audio non supporté. Le fichier peut être corrompu ou dans un format incompatible.';
         } else if (error.message?.includes('Network')) {
-          errorMessage = 'Erreur réseau. Vérifiez votre connexion et que le serveur est accessible.';
+          errorMessage =
+            'Erreur réseau. Vérifiez votre connexion et que le serveur est accessible.';
         } else if (error.message) {
           errorMessage = error.message;
         }
-        
+
         setError(errorMessage);
       } finally {
         setIsLoading(false);
@@ -155,10 +172,8 @@ export function SceneAudio({ soundUrl, autoPlay = false, showControls = true }: 
 
   return (
     <View style={styles.container}>
-      {error && (
-        <Text style={styles.errorText}>⚠️ {error}</Text>
-      )}
-      
+      {error && <Text style={styles.errorText}>⚠️ {error}</Text>}
+
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="small" color={theme.colors.primary} />
@@ -175,7 +190,7 @@ export function SceneAudio({ soundUrl, autoPlay = false, showControls = true }: 
               {isPlaying ? '⏸ Pause' : '▶ Lecture'}
             </Text>
           </TouchableOpacity>
-          
+
           {isPlaying && (
             <TouchableOpacity
               onPress={stopSound}
@@ -240,4 +255,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-

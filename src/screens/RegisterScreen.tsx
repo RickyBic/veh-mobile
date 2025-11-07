@@ -1,7 +1,8 @@
 import { useRouter } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
+  ImageBackground,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -10,12 +11,11 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  ImageBackground,
 } from 'react-native';
+import backgroundImage from '../../assets/images/background.png';
 import { MysticalButton } from '../components/MysticalButton';
 import { useAuth } from '../contexts/AuthContext';
 import { theme } from '../utils/theme';
-import backgroundImage from '../../assets/images/background.png';
 
 export function RegisterScreen() {
   const [email, setEmail] = useState('');
@@ -23,6 +23,7 @@ export function RegisterScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
   const { register, isLoading, error, user } = useAuth();
   const router = useRouter();
 
@@ -46,7 +47,10 @@ export function RegisterScreen() {
     }
 
     if (password.length < 6) {
-      Alert.alert('Erreur', 'Le mot de passe doit contenir au moins 6 caractères');
+      Alert.alert(
+        'Erreur',
+        'Le mot de passe doit contenir au moins 6 caractères',
+      );
       return;
     }
 
@@ -65,13 +69,18 @@ export function RegisterScreen() {
         lastName: lastName.trim() || undefined,
         role: 'player', // Par défaut, les nouveaux utilisateurs sont des joueurs
       });
-      
-      // La connexion automatique est gérée dans la fonction register
-      router.replace('/(tabs)/scenarios' as any);
+
+      // Afficher le message de succès dans l'interface
+      setShowSuccess(true);
+
+      // Rediriger vers la page de login après 3 secondes pour laisser le temps de voir le message
+      setTimeout(() => {
+        router.replace('/login' as any);
+      }, 3000);
     } catch (err: any) {
       Alert.alert(
-        'Erreur d\'inscription',
-        err.message || 'Une erreur est survenue lors de l\'inscription'
+        "Erreur d'inscription",
+        err.message || "Une erreur est survenue lors de l'inscription",
       );
     }
   };
@@ -107,35 +116,31 @@ export function RegisterScreen() {
                 value={email}
                 onChangeText={setEmail}
                 placeholder="email@example.com"
-                placeholderTextColor={theme.colors.textSecondary}
+                placeholderTextColor="#7a5a3a"
                 autoCapitalize="none"
                 keyboardType="email-address"
                 editable={!isLoading}
                 autoComplete="email"
               />
 
-              <Text style={styles.label}>
-                Prénom
-              </Text>
+              <Text style={styles.label}>Prénom</Text>
               <TextInput
                 style={styles.input}
                 value={firstName}
                 onChangeText={setFirstName}
                 placeholder="Jean"
-                placeholderTextColor={theme.colors.textSecondary}
+                placeholderTextColor="#7a5a3a"
                 editable={!isLoading}
                 autoComplete="name"
               />
 
-              <Text style={styles.label}>
-                Nom
-              </Text>
+              <Text style={styles.label}>Nom</Text>
               <TextInput
                 style={styles.input}
                 value={lastName}
                 onChangeText={setLastName}
                 placeholder="Dupont"
-                placeholderTextColor={theme.colors.textSecondary}
+                placeholderTextColor="#7a5a3a"
                 editable={!isLoading}
                 autoComplete="name-family"
               />
@@ -148,7 +153,7 @@ export function RegisterScreen() {
                 value={password}
                 onChangeText={setPassword}
                 placeholder="••••••••"
-                placeholderTextColor={theme.colors.textSecondary}
+                placeholderTextColor="#7a5a3a"
                 secureTextEntry
                 autoCapitalize="none"
                 editable={!isLoading}
@@ -163,7 +168,7 @@ export function RegisterScreen() {
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
                 placeholder="••••••••"
-                placeholderTextColor={theme.colors.textSecondary}
+                placeholderTextColor="#7a5a3a"
                 secureTextEntry
                 autoCapitalize="none"
                 editable={!isLoading}
@@ -172,8 +177,18 @@ export function RegisterScreen() {
 
               {error && <Text style={styles.error}>{error}</Text>}
 
+              {showSuccess && (
+                <View style={styles.successContainer}>
+                  <Text style={styles.successText}>
+                    ✓ Inscription réussie !{'\n'}
+                    Votre compte a été créé avec succès.{'\n'}
+                    Redirection vers la page de connexion...
+                  </Text>
+                </View>
+              )}
+
               <MysticalButton
-                title={isLoading ? 'Inscription en cours...' : 'S\'inscrire'}
+                title={isLoading ? 'Inscription en cours...' : "S'inscrire"}
                 onPress={handleRegister}
                 disabled={isLoading || !email || !password || !confirmPassword}
                 style={styles.button}
@@ -190,7 +205,8 @@ export function RegisterScreen() {
               </TouchableOpacity>
 
               <Text style={styles.hint}>
-                Les champs marqués d'un <Text style={styles.required}>*</Text> sont obligatoires
+                Les champs marqués d'un <Text style={styles.required}>*</Text>{' '}
+                sont obligatoires
               </Text>
             </View>
           </View>
@@ -246,6 +262,7 @@ const styles = StyleSheet.create({
   },
   required: {
     color: '#ff6b6b',
+    fontFamily: theme.fonts.bold,
   },
   input: {
     backgroundColor: theme.colors.surface,
@@ -255,13 +272,28 @@ const styles = StyleSheet.create({
     padding: theme.spacing.md,
     color: theme.colors.text,
     fontSize: 16,
-    fontFamily: Platform.select({ ios: 'System', android: 'sans-serif' }) as any,
+    fontFamily: theme.fonts.bodyRegular,
   },
   error: {
     color: '#ff6b6b',
     fontSize: 14,
     marginTop: theme.spacing.md,
     textAlign: 'center',
+  },
+  successContainer: {
+    backgroundColor: '#7a5a3a',
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    marginTop: theme.spacing.md,
+    borderWidth: 1,
+    borderColor: '#7a5a3a',
+  },
+  successText: {
+    color: '#ffffff',
+    fontSize: 14,
+    textAlign: 'center',
+    fontFamily: theme.fonts.regular,
+    lineHeight: 20,
   },
   button: {
     marginTop: theme.spacing.xl,
@@ -282,6 +314,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: theme.spacing.xl,
     lineHeight: 18,
+    fontFamily: theme.fonts.regular,
   },
 });
-
