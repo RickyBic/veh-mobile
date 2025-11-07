@@ -44,6 +44,11 @@ Application mobile React Native pour l'univers « Vous Êtes le Héros », c
    ```bash
    npm run dev
    ```
+   Ou directement avec Expo :
+   ```bash
+   npx expo start
+   ```
+   Note : `npm run dev` est recommandé car il désactive la télémétrie Expo.
 
 ## API GraphQL
 
@@ -66,10 +71,10 @@ Assurez-vous que le backend implémente ces opérations avec les champs attendus
 - **Navigation** : le Stack Expo Router gère `login`, `register` et un groupe d'onglets sécurisé `(tabs)`
 - **Contexte d'authentification** : `AuthProvider` gère le jeton, la récupération du profil et expose `login/register/logout`
 - **Écrans** :
-  - `LoginScreen`, `RegisterScreen` pour l'onboarding
-  - `ScenarioListScreen` pour lister les scénarios
-  - `GameScreen` pour l'expérience interactive et l'enregistrement de la progression
-  - `LogoutScreen` pour la déconnexion
+  - `LoginScreen`, `RegisterScreen` pour l'onboarding (dans `src/screens/`)
+  - `ScenarioListScreen` pour lister les scénarios (dans `src/screens/`)
+  - `GameScreen` pour l'expérience interactive et l'enregistrement de la progression (dans `src/screens/`)
+  - `LogoutScreen` pour la déconnexion (défini dans `app/(tabs)/logout.tsx`)
 - **Composants** : `LoadingSpinner`, `MysticalButton`, `SceneCard`, `SceneAudio` encapsulent l'UI/thème
 
 ## Sécurité
@@ -83,7 +88,7 @@ Complétez côté backend : rotation de clés JWT, expiration courte, rafraîc
 
 ## Déploiement
 
-- **Expo Go / Développement** : `npm run dev`
+- **Expo Go / Développement** : `npm run dev` (ou `npx expo start`)
 - **Web statique** : `npm run build:web` génère un bundle dans `dist/`
 - **Builds natifs** : utiliser `npx expo prebuild` puis `npx expo run:android`, ou configurer [EAS Build](https://docs.expo.dev/build/introduction/)
 - Pensez à définir `EXPO_PUBLIC_API_URL` pour les environnements staging/production (via variables EAS ou `app.config.ts`)
@@ -122,6 +127,5 @@ Complétez côté backend : rotation de clés JWT, expiration courte, rafraîc
 5. Ouvrez une Pull Request en détaillant le contexte, les changements et les vérifications effectuées
 
 ## Licence
+
 MIT
-
-
