@@ -1,12 +1,12 @@
+import { Audio } from 'expo-av';
 import React, { useEffect, useState } from 'react';
 import {
-  View,
-  TouchableOpacity,
-  Text,
-  StyleSheet,
   ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { Audio } from 'expo-av';
 import { getFullAssetUrl } from '../utils/asset-url';
 import { theme } from '../utils/theme';
 
@@ -84,9 +84,6 @@ export function SceneAudio({
             setIsPlaying(status.isPlaying);
             if (status.didJustFinish) {
               setIsPlaying(false);
-            }
-            if (status.error) {
-              setError(`Erreur de lecture: ${status.error}`);
             }
           } else {
             if (status.error) {

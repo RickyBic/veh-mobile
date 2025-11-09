@@ -1,6 +1,6 @@
-import { useMutation, useQuery } from '@apollo/client/react';
+import { useQuery } from '@apollo/client/react';
 import { useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ImageBackground,
   ScrollView,
@@ -14,16 +14,13 @@ import { MysticalButton } from '../components/MysticalButton';
 import { SceneAudio } from '../components/SceneAudio';
 import { SceneCard } from '../components/SceneCard';
 import { useAuth } from '../contexts/AuthContext';
-import { CREATE_PROGRESS, RECORD_PROGRESS } from '../graphql/mutations';
 import {
   GET_CHOICES_BY_SCENE,
   GET_SCENES_BY_SCENARIO,
 } from '../graphql/queries';
 import {
-  CreateProgressResponse,
   GetChoicesBySceneResponse,
   GetScenesByScenarioResponse,
-  RecordProgressResponse,
   Scene,
 } from '../graphql/types';
 import { theme } from '../utils/theme';
@@ -40,8 +37,7 @@ export function GameScreen() {
   const { user } = useAuth();
   const [currentSceneId, setCurrentSceneId] = useState<string | null>(null);
   const [currentScene, setCurrentScene] = useState<Scene | null>(null);
-  const [progressId, setProgressId] = useState<string | null>(null);
-  const [isInitializingProgress, setIsInitializingProgress] = useState(false);
+  const [isSceneLoading, setIsSceneLoading] = useState(false);
 
   // Charger les scènes du scénario
   const {
@@ -49,7 +45,7 @@ export function GameScreen() {
     loading: scenarioLoading,
     error: scenarioError,
   } = useQuery<GetScenesByScenarioResponse>(GET_SCENES_BY_SCENARIO, {
-    variables: { scenarioId: scenarioId },
+    variables: { scenarioId },
     skip: !scenarioId,
   });
 
@@ -62,87 +58,23 @@ export function GameScreen() {
     },
   );
 
-  // Mutations pour la gestion de progression
-  const [createProgress] = useMutation<CreateProgressResponse>(CREATE_PROGRESS);
-  const [recordProgress] = useMutation<RecordProgressResponse>(RECORD_PROGRESS);
-
-  // Créer un objet scenario factice pour compatibilité
-  const scenarioData = scenesData
-    ? {
-        scenarioById: {
-          mongoId: scenarioId || '',
-          title: 'Scénario',
-          description: '',
-          scenes: scenesData.scenesByScenario || [],
-        },
-      }
-    : null;
-
-  // Initialiser ou récupérer la progression
-  useEffect(() => {
-    if (
-      user &&
-      scenarioId &&
-      scenarioData?.scenarioById &&
-      !progressId &&
-      !isInitializingProgress
-    ) {
-      initProgress();
-    }
-  }, [user, scenarioId, scenarioData, progressId, isInitializingProgress]);
-
-  // Fonction pour initialiser la progression
-  const initProgress = async () => {
-    setIsInitializingProgress(true);
-    try {
-      const scenario: Scenario = scenarioData!.scenarioById;
-
-      // Trouver la scène de départ
-      const startScene = scenario.scenes.find((s) => s.isStartScene);
-      if (!startScene) {
-        setIsInitializingProgress(false);
-        return;
-      }
-
-      // Créer ou récupérer la progression
-      const { data } = await createProgress({
-        variables: {
-          input: {
-            scenarioId: scenarioId,
-            currentSceneId: startScene.mongoId,
+  // Construire l'objet scénario
+  const scenarioData = useMemo(() => {
+    return scenesData
+      ? {
+          scenarioById: {
+            mongoId: scenarioId || '',
+            title: 'Scénario',
+            description: '',
+            scenes: scenesData.scenesByScenario || [],
           },
-        },
-      });
-
-      if (data?.createProgress?.success && data?.createProgress?.progress) {
-        const progress = data.createProgress.progress;
-        setProgressId(progress.mongoId);
-
-        // Si une progression existe déjà, reprendre à la scène actuelle
-        if (progress.currentSceneId?.mongoId) {
-          setCurrentSceneId(progress.currentSceneId.mongoId);
-        } else {
-          setCurrentSceneId(startScene.mongoId);
         }
-      } else {
-        // Si pas de progression, commencer quand même
-        setCurrentSceneId(startScene.mongoId);
-      }
-    } catch (error) {
-      // En cas d'erreur, permettre quand même de jouer
-      const scenario: Scenario = scenarioData!.scenarioById;
-      const startScene = scenario.scenes.find((s) => s.isStartScene);
-      if (startScene) {
-        setCurrentSceneId(startScene.mongoId);
-      }
-    } finally {
-      setIsInitializingProgress(false);
-    }
-  };
+      : null;
+  }, [scenesData, scenarioId]);
 
-  // Initialiser la scène de départ (pour les utilisateurs non authentifiés)
+  // Initialiser la scène de départ
   useEffect(() => {
-    if (!user && scenarioData?.scenarioById && !currentSceneId) {
+    if (scenarioData?.scenarioById && !currentSceneId) {
       const scenario: Scenario = scenarioData.scenarioById;
       const startScene = scenario.scenes.find((s) => s.isStartScene);
       if (startScene) {
@@ -150,7 +82,7 @@ export function GameScreen() {
         setCurrentScene(startScene);
       }
     }
-  }, [user, scenarioData, currentSceneId]);
+  }, [scenarioData, currentSceneId]);
 
   // Mettre à jour la scène courante avec les choix
   useEffect(() => {
@@ -158,60 +90,33 @@ export function GameScreen() {
       const scenario: Scenario = scenarioData.scenarioById;
       const scene = scenario.scenes.find((s) => s.mongoId === currentSceneId);
       if (scene) {
-        // Ajouter les choix à la scène
-        const sceneWithChoices = {
+        setIsSceneLoading(true);
+        setCurrentScene({
           ...scene,
-          choices: choicesData?.choicesByScene || [],
-        };
-        setCurrentScene(sceneWithChoices);
+          choices: choicesData?.choicesByScene || undefined,
+        });
+        setIsSceneLoading(false);
       }
     }
   }, [currentSceneId, scenarioData, choicesData]);
 
-  const handleChoice = async (choiceId: string, nextSceneId: string) => {
-    try {
-      // Mettre à jour la scène immédiatement pour une meilleure UX
-      setCurrentSceneId(nextSceneId);
-
-      // Enregistrer la progression (si authentifié)
-      if (user && progressId) {
-        await recordProgress({
-          variables: {
-            input: {
-              progressId: progressId,
-              sceneId: nextSceneId,
-              choiceId: choiceId,
-              metadata: {
-                timestamp: new Date().toISOString(),
-                scenarioId: scenarioId,
-              },
-            },
-          },
-        });
-      }
-    } catch (error) {
-      // On continue quand même le jeu même si la sauvegarde échoue
-    }
+  const handleChoice = (choiceId: string, nextSceneId: string) => {
+    setIsSceneLoading(true);
+    setCurrentSceneId(nextSceneId);
   };
 
-  const handleStartNewGame = async () => {
+  const handleStartNewGame = () => {
     if (scenarioData?.scenarioById) {
       const scenario: Scenario = scenarioData.scenarioById;
       const startScene = scenario.scenes.find((s) => s.isStartScene);
       if (startScene) {
         setCurrentSceneId(startScene.mongoId);
         setCurrentScene(startScene);
-
-        // Réinitialiser la progression si authentifié
-        if (user && scenarioId) {
-          setProgressId(null);
-          setIsInitializingProgress(false);
-          // Cela déclenchera initProgress() via useEffect
-        }
       }
     }
   };
 
+  // Gestion du chargement global
   if (scenarioLoading) {
     return (
       <ImageBackground
@@ -224,6 +129,7 @@ export function GameScreen() {
     );
   }
 
+  // Gestion d'erreur : aucun scénario
   if (!scenarioId) {
     return (
       <ImageBackground
@@ -249,6 +155,7 @@ export function GameScreen() {
     );
   }
 
+  // Erreur : chargement du scénario
   if (scenarioError) {
     return (
       <ImageBackground
@@ -264,6 +171,7 @@ export function GameScreen() {
     );
   }
 
+  // Scénario introuvable
   if (!scenarioData?.scenarioById) {
     return (
       <ImageBackground
@@ -279,6 +187,7 @@ export function GameScreen() {
     );
   }
 
+  // Attente de la scène initiale
   if (!currentScene) {
     return (
       <ImageBackground
@@ -305,19 +214,28 @@ export function GameScreen() {
     );
   }
 
-  // Trier les choix par ordre
+  // Si les choix de la scène suivante ne sont pas encore chargés
+  if (isSceneLoading || !currentScene.choices) {
+    return (
+      <ImageBackground
+        source={backgroundImage}
+        resizeMode="cover"
+        style={styles.background}
+      >
+        <LoadingSpinner message="Chargement de la scène suivante..." />
+      </ImageBackground>
+    );
+  }
+
+  // Déterminer si la scène est une fin
+  const isEndScene =
+    currentScene.isEndScene ||
+    (Array.isArray(currentScene.choices) && currentScene.choices.length === 0);
+
+  // Trier les choix
   const sortedChoices = currentScene.choices
     ? [...currentScene.choices].sort((a, b) => a.order - b.order)
     : [];
-
-  // Déterminer si c'est une scène de fin
-  // Une scène est de fin si :
-  // 1. isEndScene est true, OU
-  // 2. La scène n'a pas de choix (scène terminale de l'arbre)
-  const isEndScene =
-    currentScene.isEndScene ||
-    !currentScene.choices ||
-    currentScene.choices.length === 0;
 
   return (
     <ImageBackground
@@ -335,20 +253,18 @@ export function GameScreen() {
           imageUrl={currentScene.imageId?.url}
         />
 
-        {/* Lecteur audio pour la scène - TTS (narration) */}
         {currentScene.soundId && (
           <SceneAudio
             soundUrl={currentScene.soundId.url}
-            autoPlay={true}
+            autoPlay
             showControls={false}
           />
         )}
 
-        {/* Lecteur audio pour la scène - Musique d'ambiance */}
         {currentScene.musicId && (
           <SceneAudio
             soundUrl={currentScene.musicId.url}
-            autoPlay={true}
+            autoPlay
             showControls={false}
           />
         )}
@@ -421,9 +337,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: theme.spacing.xl,
-  },
-  startButton: {
-    marginTop: theme.spacing.xl,
   },
   choicesContainer: {
     marginTop: theme.spacing.xl,
